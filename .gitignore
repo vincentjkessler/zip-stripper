@@ -1,0 +1,18 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+build/
+dist/
+release/
+*.spec.bak
+*.zip
+*.log
+.DS_Store
+
+# Private: never published
+CHANGELOG.md
+pro/
+marketing/
+dist/

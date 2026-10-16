@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zip-stripper"
+version = "2.0.0"
+description = "Right-click a folder, get a clean, secret-free ZIP your AI (ChatGPT, Claude, Gemini) can actually use."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Vincent J. Kessler" }]
+keywords = ["zip", "ai", "chatgpt", "claude", "gemini", "vibe-coding", "secrets", "gitignore", "developer-tools", "windows"]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Web Environment",
+  "Intended Audience :: Developers",
+  "Intended Audience :: End Users/Desktop",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: System :: Archiving :: Compression",
+  "Topic :: Software Development"
+]
+
+[project.urls]
+Homepage = "https://vincentjkessler.github.io/zip-stripper/"
+Source = "https://github.com/vincentjkessler/zip-stripper"
+Issues = "https://github.com/vincentjkessler/zip-stripper/issues"
+
+[project.scripts]
+zip-stripper = "zip_stripper:main"
+zip-stripper-library = "zip_stripper_web:main"
+
+[tool.setuptools]
+py-modules = ["zip_stripper", "zip_stripper_web"]

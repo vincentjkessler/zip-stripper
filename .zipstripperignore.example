@@ -1,0 +1,22 @@
+# Zip Stripper per-project rules
+# Lines beginning with # are comments.
+# Bare lines or drop: lines remove paths from the handoff package.
+# keep: or ! lines preserve paths even if a profile would normally remove them.
+
+# Example: keep one small fixture from state/ while using Source Only mode
+keep: state/needed_fixture.json
+!state/needed_fixture.json
+
+# keep-secret: lines keep a file that looks like a password/key file (use with care)
+# keep-secret: config/public_test_cert.pem
+
+# Example: drop local notes or bulky generated material
+drop: local_notes/**
+drop: scratch/**
+drop: *.tmp
+
+# Optional settings
+# profile: source
+# destination: chatgpt
+# target-mb: 250
+# max-zip-mb: 450

@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zip Stripper: clean, safe ZIPs for ChatGPT, Claude and Gemini</title>
+<meta name="description" content="Right-click a folder, get a clean, secret-free ZIP your AI can actually use. Free and open source. Pro brings the AI's changes back safely.">
+<meta property="og:title" content="Zip Stripper: right-click a folder, get a clean ZIP for your AI">
+<meta property="og:description" content="Secrets out, junk out, .gitignore respected, a library of everything you sent. Free and open source for Windows. A Vincent J. Kessler production.">
+<meta property="og:image" content="https://vincentjkessler.github.io/zip-stripper/img/library.png">
+<meta property="og:url" content="https://vincentjkessler.github.io/zip-stripper/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='10' y='4' width='44' height='56' rx='8' fill='%232f6fed'/%3E%3Cpath d='M30 4h6v6h-6zm-6 6h6v6h-6zm6 6h6v6h-6zm-6 6h6v6h-6zm6 6h6v6h-6z' fill='%23fff'/%3E%3Crect x='24' y='40' width='16' height='12' rx='3' fill='%23fff'/%3E%3C/svg%3E">
+<script src="config.js"></script>
+<style>
+:root { --bg: #f6f7fb; --card: #fff; --ink: #141a26; --muted: #5d6779; --line: #e3e6ee; --accent: #2f6fed; --accent2: #e8590c; --ok: #157f3c; --soft: #eef3ff; }
+@media (prefers-color-scheme: dark) { :root { --bg: #0f1218; --card: #181c25; --ink: #e9ecf3; --muted: #9aa3b5; --line: #2a3040; --accent: #5b8cff; --accent2: #ff8a3d; --ok: #63d48c; --soft: #1b2440; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.55 "Segoe UI", system-ui, -apple-system, sans-serif; }
+a { color: var(--accent); }
+.wrap { max-width: 1060px; margin: 0 auto; padding: 0 20px; }
+nav { display: flex; align-items: center; gap: 18px; padding: 18px 0; }
+nav .logo { font-weight: 700; font-size: 20px; display: flex; gap: 8px; align-items: center; margin-right: auto; color: var(--ink); text-decoration: none; }
+nav a.l { color: var(--muted); text-decoration: none; font-size: 15px; }
+.hero { padding: 48px 0 24px; text-align: center; }
+.hero h1 { font-size: clamp(32px, 5.4vw, 56px); line-height: 1.08; margin: 0 0 16px; letter-spacing: -0.02em; }
+.hero h1 span { background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hero p.lead { font-size: 20px; color: var(--muted); max-width: 720px; margin: 0 auto 26px; }
+.cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.btn { display: inline-block; padding: 13px 22px; border-radius: 12px; font-weight: 650; text-decoration: none; border: 1px solid var(--line); background: var(--card); color: var(--ink); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn.pro { background: linear-gradient(135deg, #f6b73c, #e8590c); border: 0; color: #fff; }
+.small { color: var(--muted); font-size: 14px; margin-top: 12px; }
+.shot { margin: 34px auto 0; max-width: 980px; border-radius: 16px; overflow: hidden; border: 1px solid var(--line); box-shadow: 0 30px 80px rgba(20, 30, 60, .18); }
+.shot img { display: block; width: 100%; height: auto; }
+section { padding: 56px 0; }
+h2 { font-size: clamp(26px, 3.4vw, 36px); margin: 0 0 10px; letter-spacing: -0.01em; }
+.sub { color: var(--muted); margin: 0 0 28px; max-width: 720px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 20px; }
+.card h3 { margin: 6px 0 6px; font-size: 18px; }
+.card p { margin: 0; color: var(--muted); font-size: 15.5px; }
+.icon { font-size: 26px; }
+.steps { counter-reset: s; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.step { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 20px; position: relative; }
+.step::before { counter-increment: s; content: counter(s); position: absolute; top: -14px; left: 18px; width: 30px; height: 30px; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; font-weight: 700; }
+table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; font-size: 15.5px; }
+th, td { padding: 12px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+th { background: var(--soft); }
+td.c, th.c { text-align: center; }
+.yes { color: var(--ok); font-weight: 700; }
+.price { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
+.plan { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 26px; }
+.plan.pro { border: 2px solid var(--accent2); }
+.plan .amt { font-size: 42px; font-weight: 750; margin: 6px 0; }
+.plan .amt s { font-size: 22px; color: var(--muted); font-weight: 500; margin-left: 8px; }
+.plan ul { padding-left: 20px; color: var(--muted); }
+.plan li { margin: 6px 0; }
+.tag { display: inline-block; font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: linear-gradient(135deg, #f6b73c, #e8590c); color: #fff; }
+details { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 18px; margin-bottom: 10px; }
+summary { font-weight: 650; cursor: pointer; }
+details p { color: var(--muted); margin: 10px 0 0; }
+footer { padding: 40px 0 60px; color: var(--muted); text-align: center; font-size: 14px; border-top: 1px solid var(--line); }
+@media (max-width: 640px) { nav a.l { display: none; } th, td { padding: 9px 8px; font-size: 14px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="logo" href="#"><svg width="26" height="26" viewBox="0 0 64 64"><rect x="10" y="4" width="44" height="56" rx="8" fill="#2f6fed"/><path d="M30 4h6v6h-6zm-6 6h6v6h-6zm6 6h6v6h-6zm-6 6h6v6h-6zm6 6h6v6h-6z" fill="#fff"/><rect x="24" y="40" width="16" height="12" rx="3" fill="#fff"/></svg> Zip Stripper</a>
+    <a class="l" href="#how">How it works</a>
+    <a class="l" href="#pro">Pro</a>
+    <a class="l" href="#faq">FAQ</a>
+    <a class="l" data-href="repoUrl" href="https://github.com/vincentjkessler/zip-stripper">GitHub</a>
+  </nav>
+
+  <header class="hero">
+    <h1>Right-click a folder.<br><span>Get a ZIP your AI can actually use.</span></h1>
+    <p class="lead">Zip Stripper copies your project, takes out the junk, the giant screenshots and every password it can find, and hands you a clean ZIP for ChatGPT, Claude or Gemini. Your real folder is never touched.</p>
+    <div class="cta">
+      <a class="btn primary" data-href="downloadUrl" href="https://github.com/vincentjkessler/zip-stripper/releases/latest">Download free for Windows</a>
+      <a class="btn pro" href="#pro">See Zip Stripper Pro</a>
+    </div>
+    <div class="small">Free and open source (MIT) · Windows · needs Python 3.10+ · a Vincent J. Kessler production</div>
+    <div class="shot"><img src="img/library.png" alt="The Zip Stripper Library page listing ZIPs with Copy for upload buttons" loading="lazy"></div>
+  </header>
+
+  <section id="how">
+    <h2>Three clicks from messy folder to AI</h2>
+    <p class="sub">No command line. No uploading 400 MB of <code>node_modules</code>. No accidentally pasting your API key into a chat.</p>
+    <div class="steps">
+      <div class="step"><h3>Right-click</h3><p>Any folder → <b>Strip &amp; Zip for AI Upload</b>.</p></div>
+      <div class="step"><h3>Copy for upload</h3><p>Your library page opens on the new ZIP. One button puts the file on your clipboard.</p></div>
+      <div class="step"><h3>Ctrl+V into the chat</h3><p>ChatGPT, Claude or Gemini gets a clean project it can unpack and run.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>What gets taken out (and what doesn't)</h2>
+    <p class="sub">Everything left out is listed in a plain-English receipt, so you always know what the AI did and didn't see.</p>
+    <div class="grid">
+      <div class="card"><div class="icon">🔐</div><h3>Your secrets</h3><p><code>.env</code>, credentials, certificates, SSH keys, and any file with an API key inside (OpenAI, Anthropic, GitHub, AWS, Google, Stripe…). The key itself is never printed.</p></div>
+      <div class="card"><div class="icon">🙈</div><h3>What your .gitignore says</h3><p>Root and nested <code>.gitignore</code> files are respected, so private data stays home.</p></div>
+      <div class="card"><div class="icon">🧹</div><h3>The junk</h3><p><code>node_modules</code>, virtual environments, caches, build output, logs, old ZIPs.</p></div>
+      <div class="card"><div class="icon">🖼️</div><h3>The bloat</h3><p>Duplicate files go in once. Big screenshots and videos are listed, not shipped. One real project went from 74 MB to 1 MB.</p></div>
+      <div class="card"><div class="icon">📚</div><h3>A library of everything</h3><p>Every ZIP you made, newest first, on a page in your browser. Redo, copy again, or read the receipt any time.</p></div>
+      <div class="card"><div class="icon">📦</div><h3>A real ZIP</h3><p>Not one giant text file. The AI gets your folders and files, so it can unpack, run and test your project.</p></div>
+    </div>
+  </section>
+
+  <section id="pro">
+    <h2>Zip Stripper Pro: the round trip</h2>
+    <p class="sub">Free gets your project to the AI. Pro gets the AI's work back into your project, safely, and keeps every trip small.</p>
+    <div class="grid">
+      <div class="card"><div class="icon">↩️</div><h3>Bring back AI changes</h3><p>Drop the ZIP the AI gave you onto the page. See exactly which files it changed, line by line. Test it on a copy. Apply with a backup. Undo in one click.</p></div>
+      <div class="card"><div class="icon">✂️</div><h3>Only what changed</h3><p>After the first ZIP, send just the files you changed, plus a change list the AI can read.</p></div>
+      <div class="card"><div class="icon">📏</div><h3>Fit for Claude / ChatGPT / Gemini</h3><p>Most important files first. Too big? It splits into Part 1, Part 2… in a sensible order.</p></div>
+      <div class="card"><div class="icon">🩹</div><h3>Blank out keys</h3><p>Keep the file, lose the key: <code>&lt;REDACTED: OpenAI API key&gt;</code>. The AI still sees your code.</p></div>
+      <div class="card"><div class="icon">🗜️</div><h3>Shrink pictures</h3><p>Smaller copies of big images go in, so the AI can still see your art and screenshots.</p></div>
+    </div>
+    <div class="shot" style="max-width:900px"><img src="img/review.png" alt="Reviewing the AI's changes before applying them" loading="lazy"></div>
+  </section>
+
+  <section>
+    <h2>How it compares</h2>
+    <p class="sub">Text-digest tools are great for pasting a repo into a prompt. Zip Stripper is for handing a project to an AI and getting it back.</p>
+    <table>
+      <tr><th></th><th class="c">Zip Stripper</th><th class="c">Text-digest tools<br><span style="font-weight:400;font-size:13px">e.g. Repomix, Gitingest</span></th></tr>
+      <tr><td>What you get</td><td class="c">A real ZIP with your folders</td><td class="c">One big text file</td></tr>
+      <tr><td>Secret check, .gitignore, token count</td><td class="c yes">✓</td><td class="c">✓ (Repomix)</td></tr>
+      <tr><td>Right-click, no command line</td><td class="c yes">✓</td><td class="c">–</td></tr>
+      <tr><td>Library of everything you sent</td><td class="c yes">✓</td><td class="c">–</td></tr>
+      <tr><td>Bring the AI's changes back safely, with undo</td><td class="c yes">✓ Pro</td><td class="c">–</td></tr>
+      <tr><td>Only-what-changed follow-ups</td><td class="c yes">✓ Pro</td><td class="c">–</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>Pricing</h2>
+    <div class="price">
+      <div class="plan">
+        <h3>Zip Stripper</h3>
+        <div class="amt">Free</div>
+        <ul><li>Clean, secret-free ZIPs</li><li>.gitignore, junk and bloat removal</li><li>Library page + Copy for upload</li><li>Open source (MIT)</li></ul>
+        <a class="btn" data-href="downloadUrl" href="https://github.com/vincentjkessler/zip-stripper/releases/latest">Download free</a>
+      </div>
+      <div class="plan pro">
+        <span class="tag">PRO</span> <span class="launch-note" style="color:var(--muted);font-size:14px"></span>
+        <h3>Zip Stripper Pro</h3>
+        <div class="amt"><span class="pro-price">$9</span><s class="pro-was"></s></div>
+        <ul><li>Everything in Free</li><li>Bring back AI changes, with test copy, backup and undo</li><li>Only-what-changed ZIPs</li><li>Fit for Claude / ChatGPT / Gemini (auto-split)</li><li>Blank out keys · shrink pictures</li><li>One-time payment, yours to keep</li></ul>
+        <a class="btn pro buy-btn" href="#">Get Pro</a>
+        <div class="small buy-note"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq">
+    <h2>Questions</h2>
+    <details><summary>Does it change my project?</summary><p>No. It copies your project to a temporary folder, cleans the copy and zips it. Bringing AI changes back (Pro) only touches your folder when you press Apply, makes a backup first, and can undo.</p></details>
+    <details><summary>Does anything get uploaded anywhere?</summary><p>No. Zip Stripper runs on your computer. The library page only listens on your own machine. You decide what to paste into which AI.</p></details>
+    <details><summary>Will it catch every secret?</summary><p>It catches the common ones: key files, credential files and well-known API-key formats. No pattern check can promise to catch everything, so every ZIP comes with a receipt listing what was found.</p></details>
+    <details><summary>Windows says "Windows protected your PC".</summary><p>New open-source apps aren't code-signed yet. Click <b>More info → Run anyway</b>. You can read every line of the free version on GitHub.</p></details>
+    <details><summary>Mac or Linux?</summary><p>The command-line tool and the library page work anywhere Python runs. The right-click menu and auto-start are Windows-only for now.</p></details>
+    <details><summary>Is Pro a subscription?</summary><p>No. One payment, and that version is yours.</p></details>
+  </section>
+</div>
+<footer>
+  Zip Stripper · a Vincent J. Kessler production · <a data-href="repoUrl" href="https://github.com/vincentjkessler/zip-stripper">GitHub</a> · MIT licensed (Pro is a separate paid add-on)
+</footer>
+<script>
+(function () {
+  var c = window.ZIP_STRIPPER || {};
+  document.querySelectorAll("[data-href]").forEach(function (a) { if (c[a.dataset.href]) a.href = c[a.dataset.href]; });
+  var price = document.querySelector(".pro-price"), was = document.querySelector(".pro-was"), note = document.querySelector(".launch-note");
+  if (c.launchPrice) { price.textContent = c.launchPrice; was.textContent = c.price || ""; note.textContent = c.launchNote || ""; }
+  else if (c.price) { price.textContent = c.price; }
+  var buy = document.querySelector(".buy-btn"), buyNote = document.querySelector(".buy-note");
+  if (c.buyUrl) { buy.href = c.buyUrl; buy.textContent = "Get Pro for " + (c.launchPrice || c.price || ""); }
+  else { buy.href = c.repoUrl || "#"; buy.textContent = "Pro is coming: watch for it"; buyNote.textContent = "Click Watch → Custom → Releases on GitHub to hear the moment it launches."; }
+})();
+</script>
+</body>
+</html>
