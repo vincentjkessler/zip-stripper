@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """
-Zip Stripper v2.0.0
+Zip Stripper v2.0.1
 Copy a project, strip heavy/generated/private folders, zip the clean copy.
 Standard-library only. Windows-first, cross-platform enough for tests.
 
+v2.0.1 copies the finished ZIP to the clipboard after a right-click run.
 v2.0.0 is the first release as plain "Zip Stripper" (with an optional paid
 Zip Stripper Pro add-on, see load_pro()).
 v1.6.0 added the Zip Stripper Library: zips go to Documents/Zip Stripper Library
@@ -30,7 +31,7 @@ import sys
 import tempfile
 import zipfile
 
-VERSION = "2.0.0"
+VERSION = "2.0.1"
 APP_NAME = "Zip Stripper"
 
 DEFAULT_STRIP_DIRS = {
