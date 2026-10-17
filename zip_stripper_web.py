@@ -17,6 +17,7 @@ import json
 import mimetypes
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import threading
@@ -158,6 +159,8 @@ def redo_arguments(entry: dict[str, object]) -> list[str]:
 # ---------------------------------------------------------------------------
 JOBS: dict[str, dict[str, object]] = {}
 JOBS_LOCK = threading.Lock()
+PROCS: dict[str, subprocess.Popen] = {}  # running job id -> its process, so Cancel can stop it
+WORK_DIRS: dict[str, Path] = {}  # job id -> the library folder it is filling, so Cancel can tidy it
 
 
 def start_job(root: Path, args: list[str], label: str) -> dict[str, object]:
@@ -179,9 +182,16 @@ def start_command_job(cmd: list[str], label: str, root: Path | None = None, cwd:
             proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
                                     env=env, cwd=str(cwd) if cwd else None, creationflags=NO_WINDOW,
                                     text=True, encoding="utf-8", errors="replace")
+            with JOBS_LOCK:
+                PROCS[str(job["id"])] = proc
+                cancelled_early = bool(job.get("cancel_requested"))
+            if cancelled_early:
+                stop_process_tree(proc)
             assert proc.stdout is not None
             for line in proc.stdout:
                 line = line.rstrip("\n")
+                if root is not None and "Working folder:" in line:
+                    WORK_DIRS[str(job["id"])] = Path(line.split("Working folder:", 1)[1].strip())
                 with JOBS_LOCK:
                     log = job["log"]  # type: ignore[assignment]
                     log.append(line)  # type: ignore[union-attr]
@@ -193,17 +203,72 @@ def start_command_job(cmd: list[str], label: str, root: Path | None = None, cwd:
                     except ValueError:
                         pass
             code = proc.wait()
-            job["status"] = "done" if code == 0 else "failed"
+            if job.get("cancel_requested") and code != 0:
+                job["status"] = "cancelled"
+                if root is not None:
+                    remove_unfinished_run(root, WORK_DIRS.get(str(job["id"])))
+            else:
+                job["status"] = "done" if code == 0 else "failed"
         except Exception as exc:  # noqa: BLE001 - shown to the user on the page
             if os.name == "nt" and cwd is not None and len(str(cwd)) > 240:
                 exc = RuntimeError("this folder's path is too long for Windows to run programs in "
                                    "(over 240 characters). Set ZIPSTRIPPER_LIBRARY to a shorter folder.")
             job["log"].append(f"ERROR: {exc}")  # type: ignore[union-attr]
             job["status"] = "failed"
+        with JOBS_LOCK:
+            PROCS.pop(str(job["id"]), None)
+            WORK_DIRS.pop(str(job["id"]), None)
         job["finished"] = time.time()
 
     threading.Thread(target=worker, daemon=True).start()
     return job
+
+
+def stop_process_tree(proc: subprocess.Popen) -> None:
+    """Stop a job's program and anything it started."""
+    if proc.poll() is not None:
+        return
+    if os.name == "nt":
+        subprocess.run(["taskkill", "/T", "/F", "/PID", str(proc.pid)], capture_output=True, creationflags=NO_WINDOW)
+    else:
+        proc.kill()
+
+
+def cancel_job(job_id: str) -> bool:
+    """Stop a running job. Returns False if there is no such running job."""
+    with JOBS_LOCK:
+        job = JOBS.get(job_id)
+        if job is None or job.get("status") != "running":
+            return False
+        job["cancel_requested"] = True
+        proc = PROCS.get(job_id)
+    if proc is not None:
+        stop_process_tree(proc)
+    return True
+
+
+def remove_unfinished_run(root: Path, run_dir: Path | None) -> None:
+    """Delete the half-made folder a cancelled job left in the library (never a finished ZIP)."""
+    if run_dir is None:
+        return
+    try:
+        run_dir = run_dir.resolve()
+        run_dir.relative_to(root.resolve())
+    except (OSError, ValueError):
+        return
+    if run_dir == root.resolve() or (run_dir / "details" / zs.LIBRARY_ENTRY_NAME).is_file():
+        return
+    for _ in range(10):  # Windows may hold the files for a moment after the program stops
+        shutil.rmtree(run_dir, ignore_errors=True)
+        if not run_dir.exists():
+            break
+        time.sleep(0.3)
+    project_dir = run_dir.parent
+    try:
+        if project_dir != root.resolve() and not any(project_dir.iterdir()):
+            project_dir.rmdir()
+    except OSError:
+        pass
 
 
 def jobs_snapshot() -> list[dict[str, object]]:
@@ -403,6 +468,8 @@ class LibraryHandler(BaseHTTPRequestHandler):
         try:
             if path == "/api/new":
                 self.action_new(data)
+            elif path == "/api/cancel-job":
+                self.send_json({"ok": cancel_job(str(data.get("job", "")))})
             elif path == "/api/open-library":
                 reveal_in_explorer(self.root)
                 self.send_json({"ok": True})
@@ -752,6 +819,8 @@ button:disabled { opacity: .55; cursor: default; }
 .filter { width: 100%; font: inherit; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); color: var(--ink); margin-bottom: 16px; }
 .job { background: var(--soft); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; }
 .job .top { display: flex; gap: 10px; align-items: center; font-weight: 600; }
+.job .cancel { margin-left: auto; font: inherit; font-weight: 600; padding: 4px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--ink); cursor: pointer; }
+.job .cancel:hover { border-color: currentColor; }
 .job pre { margin: 8px 0 0; max-height: 130px; overflow: auto; font: 12px/1.4 Consolas, monospace; color: var(--muted); white-space: pre-wrap; word-break: break-all; }
 .spin { width: 14px; height: 14px; border: 2px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -1002,8 +1071,9 @@ function renderJobs(jobs) {
   jobsRunning = jobs.some((j) => j.status === "running");
   const recent = jobs.filter((j) => j.status === "running" || Date.now() / 1000 - (j.finished || 0) < 120);
   $("#jobs").innerHTML = recent.map((j) => `<div class="job">
-      <div class="top">${j.status === "running" ? '<div class="spin"></div>' : j.status === "done" ? "✓" : "✕"} ${esc(j.label)}
-        <span style="font-weight:400;color:var(--muted)">${j.status === "running" ? "working…" : j.status === "done" ? (j.run_id ? "done — it's at the top of the list" : "done") : "failed — read the last lines below"}</span></div>
+      <div class="top">${j.status === "running" ? '<div class="spin"></div>' : j.status === "done" ? "✓" : j.status === "cancelled" ? "–" : "✕"} ${esc(j.label)}
+        <span style="font-weight:400;color:var(--muted)">${j.status === "running" ? (j.cancel_requested ? "stopping…" : "working…") : j.status === "done" ? (j.run_id ? "done — it's at the top of the list" : "done") : j.status === "cancelled" ? "cancelled — nothing was saved" : "failed — read the last lines below"}</span>
+        ${j.status === "running" && !j.cancel_requested ? `<button class="cancel" data-act="cancel-job" data-job="${esc(j.id)}">Cancel</button>` : ""}</div>
       <pre>${esc(jobLines(j).join("\n"))}</pre>
     </div>`).join("");
 }
@@ -1048,6 +1118,12 @@ document.addEventListener("click", async (ev) => {
     refresh(); return;
   }
   if (act === "pro") { window.open(library.pro_url, "_blank", "noopener"); return; }
+  if (act === "cancel-job") {
+    el.disabled = true; el.textContent = "Stopping…";
+    const r = await post("/api/cancel-job", { job: el.dataset.job });
+    toast(r.ok ? "Cancelled. Nothing was saved." : "It had already finished.");
+    refresh(); return;
+  }
   if (act === "changes") {
     const r = await post("/api/changes-only", { id });
     toast(r.ok ? "Making a ZIP of only what changed…" : (r.error || "Couldn't start it."));

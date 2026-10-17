@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "zip-stripper"
-version = "2.0.1"
+version = "2.0.2"
 description = "Right-click a folder, get a clean, secret-free ZIP your AI (ChatGPT, Claude, Gemini) can actually use."
 readme = "README.md"
 requires-python = ">=3.10"
