@@ -1,6 +1,6 @@
 # Zip Stripper
 
-**Right-click a folder → get a clean, safe ZIP your AI can actually use.**
+**Right-click a folder, or press one button → a clean, safe ZIP your AI can actually use, already on your clipboard.**
 
 *A Vincent J. Kessler production.* Free and open source (MIT). Windows-first, Python 3.10+, no other installs.
 
@@ -30,9 +30,16 @@ That adds **Strip & Zip for AI Upload** to the right-click menu of every folder,
 
 ## Use it
 
-- **Right-click any folder → Strip & Zip for AI Upload.** The Library page opens on your new ZIP.
-- Press **Copy for upload**, click in the ChatGPT / Claude / Gemini message box, press **Ctrl+V**.
-- Or from a terminal: `py -3 zip_stripper.py "C:\path\to\project"`
+Two ways in. Both end with **Ctrl+V** in ChatGPT, Claude or Gemini.
+
+| From File Explorer | From your Library page |
+|---|---|
+| Right-click any folder → **Strip & Zip for AI Upload**. | Open your Library page (it starts with Windows; bookmark it). |
+| The clean ZIP is made **and copied to your clipboard**. | **Make a new ZIP** from any folder, or press **Copy for upload** on one you made before. |
+| Click in the chat's message box, press **Ctrl+V**. | Click in the chat's message box, press **Ctrl+V**. |
+| *Fastest when you're already looking at the folder.* | *Best for re-sending, redoing and keeping track of every ZIP.* |
+
+Or from a terminal: `py -3 zip_stripper.py "C:\path\to\project"` (add `--no-copy` to leave the clipboard alone).
 
 Every ZIP lives in `Documents\Zip Stripper Library\<project>\<date_time>\`. The ZIP is alone in its folder; the receipt and reports sit in `details\` beside it.
 

@@ -2885,6 +2885,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--no-token-estimate", action="store_true", help="Do not write the rough token estimate report.")
     parser.add_argument("--copy-then-strip", action="store_true", help="Strict legacy mode: copy the whole project first, then strip the copy. Slower for large projects.")
     parser.add_argument("--no-open", action="store_true", help="Do not open the output folder when finished.")
+    parser.add_argument("--no-copy", action="store_true", help="Do not copy the finished ZIP to the clipboard (by default it is copied, ready for Ctrl+V in an AI chat).")
     parser.add_argument("--quiet", action="store_true", help="Only print final result/error lines.")
     parser.add_argument("--version", action="store_true", help="Print version and exit.")
     parser.add_argument("--gui", action="store_true", help="Open the lightweight graphical interface instead of running CLI packaging.")
@@ -2973,12 +2974,35 @@ def main(argv: list[str] | None = None) -> int:
         except Exception as exc:
             ok = False
             print(f"ERROR: {project}: {exc}", file=sys.stderr, flush=True)
+    if ok and last_zip is not None and not args.no_copy and not os.environ.get("ZIPSTRIPPER_NO_CLIPBOARD"):
+        clip = sorted(last_zip.parent.glob("*.zip")) if use_library else [last_zip]
+        if copy_files_to_clipboard(clip or [last_zip]):
+            what = "ZIP is" if len(clip) <= 1 else f"{len(clip)} ZIP parts are"
+            print(f"Your {what} on the clipboard: press Ctrl+V in ChatGPT, Claude or Gemini to attach it.", flush=True)
     if not args.no_open:
         if use_library and last_zip is not None:
             open_library_page(last_zip, output_dir)
         elif ok:
             open_folder(output_dir.expanduser().resolve())
     return 0 if ok else 1
+
+
+def copy_files_to_clipboard(paths) -> bool:
+    """Put the ZIP file(s) themselves on the Windows clipboard, so Ctrl+V attaches them in an AI chat."""
+    import subprocess
+    if os.name != "nt":
+        return False
+    paths = paths if isinstance(paths, (list, tuple)) else [paths]
+    env = dict(os.environ, ZS_CLIP_FILE="\n".join(str(p) for p in paths))
+    try:
+        result = subprocess.run(
+            ["powershell", "-NoProfile", "-NonInteractive", "-STA", "-Command",
+             "Set-Clipboard -LiteralPath ($env:ZS_CLIP_FILE -split \"`n\")"],
+            env=env, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0), capture_output=True, timeout=30,
+        )
+    except Exception:  # noqa: BLE001 - a clipboard hiccup must never fail the ZIP
+        return False
+    return result.returncode == 0
 
 
 def open_library_page(zip_path: Path | None = None, root: Path | None = None) -> None:

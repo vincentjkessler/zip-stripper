@@ -13,7 +13,8 @@ echo Smart mode is on: source stays, dependency/cache junk goes,
 echo one best evidence packet copy is kept, duplicate/raw data bloat is reduced.
 echo Secret files and API keys are left out, .gitignore is respected,
 echo and big images and duplicate files are trimmed.
-echo When it is done, your ZIP Library page opens in the browser.
+echo When it is done, the ZIP is copied to your clipboard: press Ctrl+V in your AI chat.
+echo Your ZIP Library page opens in the browser too.
 echo.
 
 py -3 "%SCRIPT_DIR%zip_stripper.py" %*

@@ -217,16 +217,7 @@ def jobs_snapshot() -> list[dict[str, object]]:
 # ---------------------------------------------------------------------------
 def copy_file_to_clipboard(path: Path | list[Path]) -> bool:
     """Put the file(s) themselves on the clipboard so Ctrl+V attaches them in a chat."""
-    if os.name != "nt":
-        return False
-    paths = path if isinstance(path, list) else [path]
-    env = dict(os.environ, ZS_CLIP_FILE="\n".join(str(p) for p in paths))
-    result = subprocess.run(
-        ["powershell", "-NoProfile", "-NonInteractive", "-STA", "-Command",
-         "Set-Clipboard -LiteralPath ($env:ZS_CLIP_FILE -split \"`n\")"],
-        env=env, creationflags=NO_WINDOW, capture_output=True, timeout=30,
-    )
-    return result.returncode == 0
+    return zs.copy_files_to_clipboard(path if isinstance(path, list) else [path])
 
 
 def reveal_in_explorer(path: Path) -> None:
@@ -753,6 +744,7 @@ button:hover { border-color: var(--accent); }
 button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
 button:disabled { opacity: .55; cursor: default; }
 .newbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.newbar .tip { color: var(--muted); font-size: 12.5px; flex-basis: 100%; text-align: right; }
 .newbar input { font: inherit; padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--ink); width: 300px; max-width: 100%; }
 .where { color: var(--muted); font-size: 13px; margin: 10px 0 18px; word-break: break-all; }
 .where a, .link { color: var(--accent); cursor: pointer; text-decoration: none; }
@@ -841,11 +833,12 @@ pre.diff .a { color: var(--ok); } pre.diff .d { color: var(--bad); } pre.diff .h
     <div class="newbar">
       <input id="pathbox" placeholder="…or paste a folder path and press Enter" aria-label="Project folder path">
       <button class="primary" id="newbtn">+ Make a new ZIP</button>
+      <span class="tip">Tip: right-click any folder → <b>Strip &amp; Zip for AI Upload</b>. The ZIP lands here and is copied, ready for Ctrl+V.</span>
     </div>
   </header>
   <div class="where" id="where"></div>
   <div class="probar" id="probar"></div>
-  <div id="offline">The Zip Stripper page program isn't running. Double-click <b>22 - Zip Stripper</b> in LATEST to start it again.</div>
+  <div id="offline">The Zip Stripper page program isn't running. To start it again, double-click <b>ZipStripper-Library.cmd</b> in your Zip Stripper folder (or type <b>zip-stripper-library</b> if you installed it with pip). It also starts by itself when Windows starts.</div>
   <div id="jobs"></div>
   <input class="filter" id="filter" placeholder="Find a project…" aria-label="Find a project">
   <main id="list"></main>

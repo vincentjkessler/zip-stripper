@@ -41,6 +41,12 @@ h2 { font-size: clamp(26px, 3.4vw, 36px); margin: 0 0 10px; letter-spacing: -0.0
 .card h3 { margin: 6px 0 6px; font-size: 18px; }
 .card p { margin: 0; color: var(--muted); font-size: 15.5px; }
 .icon { font-size: 26px; }
+.ways { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
+.way { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 22px 22px 18px; }
+.way-tag { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); background: var(--soft); border-radius: 999px; padding: 4px 10px; }
+.way h3 { margin: 12px 0 8px; }
+.way ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.way-note { margin: 12px 0 0; color: var(--muted); font-size: 14px; }
 .steps { counter-reset: s; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
 .step { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 20px; position: relative; }
 .step::before { counter-increment: s; content: counter(s); position: absolute; top: -14px; left: 18px; width: 30px; height: 30px; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; font-weight: 700; }
@@ -75,8 +81,8 @@ footer { padding: 40px 0 60px; color: var(--muted); text-align: center; font-siz
   </nav>
 
   <header class="hero">
-    <h1>Right-click a folder.<br><span>Get a ZIP your AI can actually use.</span></h1>
-    <p class="lead">Zip Stripper copies your project, takes out the junk, the giant screenshots and every password it can find, and hands you a clean ZIP for ChatGPT, Claude or Gemini. Your real folder is never touched.</p>
+    <h1>Right-click a folder, or press one button.<br><span>Get a ZIP your AI can actually use.</span></h1>
+    <p class="lead">Zip Stripper copies your project, takes out the junk, the giant screenshots and every password it can find, and puts a clean ZIP for ChatGPT, Claude or Gemini right on your clipboard. Start from File Explorer or from your Library page. Your real folder is never touched.</p>
     <div class="cta">
       <a class="btn primary" data-href="downloadUrl" href="https://github.com/vincentjkessler/zip-stripper/releases/latest">Download free for Windows</a>
       <a class="btn pro" href="#pro">See Zip Stripper Pro</a>
@@ -86,12 +92,29 @@ footer { padding: 40px 0 60px; color: var(--muted); text-align: center; font-siz
   </header>
 
   <section id="how">
-    <h2>Three clicks from messy folder to AI</h2>
+    <h2>Two ways in. Both end with Ctrl+V.</h2>
     <p class="sub">No command line. No uploading 400 MB of <code>node_modules</code>. No accidentally pasting your API key into a chat.</p>
-    <div class="steps">
-      <div class="step"><h3>Right-click</h3><p>Any folder → <b>Strip &amp; Zip for AI Upload</b>.</p></div>
-      <div class="step"><h3>Copy for upload</h3><p>Your library page opens on the new ZIP. One button puts the file on your clipboard.</p></div>
-      <div class="step"><h3>Ctrl+V into the chat</h3><p>ChatGPT, Claude or Gemini gets a clean project it can unpack and run.</p></div>
+    <div class="ways">
+      <div class="way">
+        <div class="way-tag">From File Explorer</div>
+        <h3>Right-click any folder</h3>
+        <ol>
+          <li>Right-click the folder → <b>Strip &amp; Zip for AI Upload</b>.</li>
+          <li>The clean ZIP is made <b>and copied to your clipboard</b>.</li>
+          <li><b>Ctrl+V</b> into ChatGPT, Claude or Gemini.</li>
+        </ol>
+        <p class="way-note">Fastest when you're already looking at the folder.</p>
+      </div>
+      <div class="way">
+        <div class="way-tag">From your Library page</div>
+        <h3>One button, every ZIP you've made</h3>
+        <ol>
+          <li>Open your Library page (bookmark it; it starts with Windows).</li>
+          <li><b>Make a new ZIP</b> from any folder, or press <b>Copy for upload</b> on one you made before.</li>
+          <li><b>Ctrl+V</b> into ChatGPT, Claude or Gemini.</li>
+        </ol>
+        <p class="way-note">Best for re-sending, redoing, and keeping track of every ZIP.</p>
+      </div>
     </div>
   </section>
 
