@@ -417,7 +417,7 @@ class LibraryHandler(BaseHTTPRequestHandler):
                 self.send_json({"ok": True})
             elif path == "/api/settings":
                 if zs.load_pro() is None:
-                    self.send_json({"ok": False, "error": "Pro feature", "pro_url": zs.PRO_URL}, 402)
+                    self.send_json({"ok": False, "error": zs.pro_missing_message("That"), "pro_url": zs.PRO_URL}, 402)
                     return
                 settings = {"shrink_media": bool(data.get("shrink_media")), "redact_secrets": bool(data.get("redact_secrets")),
                             "fit_for": data.get("fit_for") if data.get("fit_for") in zs.FIT_PRESETS else None}
@@ -451,7 +451,7 @@ class LibraryHandler(BaseHTTPRequestHandler):
                         return
                     if path == "/api/changes-only":
                         if zs.load_pro() is None:
-                            self.send_json({"ok": False, "error": "Pro feature", "pro_url": zs.PRO_URL}, 402)
+                            self.send_json({"ok": False, "error": zs.pro_missing_message("That"), "pro_url": zs.PRO_URL}, 402)
                             return
                         job = start_job(self.root, redo_arguments(entry) + ["--changes-only", "--no-pro-defaults"],
                                         f"Only what changed: {entry.get('project')}")
@@ -490,7 +490,7 @@ class LibraryHandler(BaseHTTPRequestHandler):
     def _receive(self, archive: Path, run_id: str) -> None:
         pro = zs.load_pro()
         if pro is None:
-            self.send_json({"ok": False, "error": "Bringing back AI changes is a Zip Stripper Pro feature.", "pro_url": zs.PRO_URL}, 402)
+            self.send_json({"ok": False, "error": zs.pro_missing_message("Bringing back AI changes"), "pro_url": zs.PRO_URL}, 402)
             return
         project_folder, entry = self._project_for_run(run_id)
         if project_folder is None or entry is None:
@@ -528,7 +528,7 @@ class LibraryHandler(BaseHTTPRequestHandler):
 
     def action_receive_pick(self, data: dict[str, object]) -> None:
         if zs.load_pro() is None:
-            self.send_json({"ok": False, "error": "Bringing back AI changes is a Zip Stripper Pro feature.", "pro_url": zs.PRO_URL}, 402)
+            self.send_json({"ok": False, "error": zs.pro_missing_message("Bringing back AI changes"), "pro_url": zs.PRO_URL}, 402)
             return
         chosen = pick_zip_file()
         if not chosen:

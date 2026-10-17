@@ -2354,8 +2354,8 @@ class ProRequired(RuntimeError):
     """Raised when a Zip Stripper Pro feature is asked for without Pro installed."""
 
 
-def load_pro():
-    """Return the Zip Stripper Pro module if it is installed, else None.
+def load_pro_addon():
+    """Return the Zip Stripper Pro add-on module if its file is present (activated or not), else None.
 
     Pro is a separate paid add-on: zip_stripper_pro.py next to this file (or in
     a pro/ folder beside it). Without it everything here works as the free tool.
@@ -2373,11 +2373,55 @@ def load_pro():
     return None
 
 
+def load_pro():
+    """Return Zip Stripper Pro if it is installed AND activated with a licence key, else None."""
+    pro = load_pro_addon()
+    if pro is None:
+        return None
+    licensed = getattr(pro, "licensed", None)
+    try:
+        return pro if (licensed is None or licensed()) else None
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def pro_missing_message(feature: str) -> str:
+    """Plain words for why a Pro feature can't run: not installed, or installed but not activated."""
+    pro = load_pro_addon()
+    if pro is not None and hasattr(pro, "licensed"):
+        reason = str(pro.licence_status().get("reason") or "")
+        why = "it isn't activated yet." if (not reason or "isn't activated" in reason) else f"its licence key was refused: {reason}"
+        return (f"{feature} is a Zip Stripper Pro feature. Pro is installed here, but {why} "
+                f"Double-click 'Activate Pro' in the Zip Stripper Pro folder and paste your licence key.")
+    return f"{feature} is a Zip Stripper Pro feature. Get Pro at {PRO_URL}"
+
+
 def require_pro(feature: str):
     pro = load_pro()
     if pro is None:
-        raise ProRequired(f"{feature} is a Zip Stripper Pro feature. Get Pro at {PRO_URL}")
+        raise ProRequired(pro_missing_message(feature))
     return pro
+
+
+def licence_command(activate_key: str | None) -> int:
+    """--activate KEY / --licence: activate Pro on this computer, or say what licence is active."""
+    pro = load_pro_addon()
+    if pro is None or not hasattr(pro, "activate"):
+        print(f"Zip Stripper Pro isn't installed here. Get Pro at {PRO_URL}")
+        return 1
+    if activate_key is not None:
+        result = pro.activate(activate_key)
+        if not result.get("ok"):
+            print(f"Not activated: {result.get('reason')}")
+            return 1
+        print(f"Zip Stripper Pro is activated. Licensed to {result.get('name')} <{result.get('email')}>. Thank you!")
+        return 0
+    status = pro.licence_status()
+    if status.get("ok"):
+        print(f"Zip Stripper Pro {getattr(pro, 'PRO_VERSION', '')}: licensed to {status.get('name')} <{status.get('email')}> (key {status.get('id')}).")
+        return 0
+    print(f"Zip Stripper Pro is installed but not activated: {status.get('reason')}")
+    return 1
 
 
 def library_settings(root: Path | None = None) -> dict[str, object]:
@@ -2834,6 +2878,8 @@ def main(argv: list[str] | None = None) -> int:
     pro_group.add_argument("--redact-secrets", action="store_true", help="Pro: blank out API keys inside files instead of leaving the whole file out.")
     pro_group.add_argument("--fit-for", choices=sorted(FIT_PRESETS), default=None, help="Pro: pack the most important files first so each ZIP part fits this AI; split into parts if needed.")
     pro_group.add_argument("--no-pro-defaults", action="store_true", help="Ignore the Pro options saved on the library page.")
+    pro_group.add_argument("--activate", metavar="KEY", default=None, help="Activate Zip Stripper Pro on this computer with your licence key.")
+    pro_group.add_argument("--licence", "--license", dest="licence", action="store_true", help="Show which Zip Stripper Pro licence is active here.")
     parser.add_argument("--zipstripperignore", default=None, help="Use a specific .zipstripperignore-style rules file.")
     parser.add_argument("--no-html", action="store_true", help="Do not write the HTML summary report.")
     parser.add_argument("--no-token-estimate", action="store_true", help="Do not write the rough token estimate report.")
@@ -2847,6 +2893,8 @@ def main(argv: list[str] | None = None) -> int:
     if args.version:
         print(f"{APP_NAME} v{VERSION}")
         return 0
+    if args.activate is not None or args.licence:
+        return licence_command(args.activate)
 
     projects = list(args.projects)
     if args.gui:
